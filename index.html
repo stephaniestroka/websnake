@@ -155,6 +155,11 @@ class Snake {
 		return {head, tail};
 	}
 
+	grow() {
+		console.log(`tail pos: ${this.tail.position.x} ${this.tail.position.y}`);
+		this.tail = new SnakePart(this.tail, getNextPos(this.tail.position, getOpposite(this.direction)));
+	}
+
 	changeDirection(direction) {
 		if (isHorizontal(direction) && isHorizontal(this.direction)) {
 			return;
@@ -241,6 +246,10 @@ function reactToKeyEvent(event) {
 		case "ArrowDown":
 			console.log("Move down");
 			snake.changeDirection(DIRECTIONS.DOWN);
+			event.preventDefault();
+			break;
+		case "KeyG":
+			snake.grow();
 			event.preventDefault();
 			break;
 		default:
