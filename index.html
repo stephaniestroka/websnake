@@ -63,9 +63,9 @@ class Point {
 function getNextPos(position, direction) {
 	switch (direction) {
 		case DIRECTIONS.UP:
-			return new Point(position.x, position.y + 1);
-		case DIRECTIONS.DOWN:
 			return new Point(position.x, position.y - 1);
+		case DIRECTIONS.DOWN:
+			return new Point(position.x, position.y + 1);
 		case DIRECTIONS.LEFT:
 			return new Point(position.x - 1, position.y);
 		case DIRECTIONS.RIGHT:
@@ -111,8 +111,8 @@ class SnakePart {
 	}
 
 	draw(ctx) {
-		let square_x = this.position.x % BOARD_WIDTH; 
-		let square_y = this.position.y % BOARD_WIDTH; 
+		let square_x = mod(this.position.x, BOARD_WIDTH); 
+		let square_y = mod(this.position.y, BOARD_WIDTH); 
 
 		ctx.beginPath();
 		ctx.fillStyle = "black";
@@ -122,11 +122,15 @@ class SnakePart {
 	}
 
 	debug() {
-		let square_x = this.position.x % BOARD_WIDTH; 
-		let square_y = this.position.y % BOARD_WIDTH; 
+		let square_x = mod(this.position.x, BOARD_WIDTH); 
+		let square_y = mod(this.position.y, BOARD_WIDTH); 
 
 		return `(${square_x}, ${square_y})`;
 	}
+}
+
+function mod(n, m) {
+	return ((n % m) + m) % m;
 }
 
 class Snake {
@@ -191,19 +195,22 @@ let controller = 0;
 let ctx = canvas.getContext("2d");
 
 drawBackground(ctx);
-let snake = new Snake(3, new Point(0, 4), DIRECTIONS.RIGHT);
+let snake = new Snake(3, new Point(2, 4), DIRECTIONS.RIGHT);
 console.log(`Snake created: ${snake.debug()}`);
 
 let start_button = document.getElementById("start-button");
 start_button.addEventListener("click", function() {
 	if (controller != 0) {
+		start_button.innerHTML = "Start";
 		clearInterval(controller);
 		controller = 0;
 	} else {
+		start_button.innerHTML = "Stop";
 		controller = setInterval(function() {
 				drawBackground(ctx);
 				snake.draw(ctx);
 				snake.move();
+				// console.log(`Snake updated: ${snake.debug()}`);
 				}, 500);
 	}
 
@@ -214,7 +221,34 @@ function logKey(e) {
 	console.log(`${e.code} ${e.keyCode}`);
 }
 
-document.addEventListener('keydown', logKey);
+function reactToKeyEvent(event) {
+	switch (event.code) {
+		case "ArrowRight":
+			console.log("Move right");
+			snake.changeDirection(DIRECTIONS.RIGHT);
+			event.preventDefault();
+			break;
+		case "ArrowLeft":
+			console.log("Move left");
+			snake.changeDirection(DIRECTIONS.LEFT);
+			event.preventDefault();
+			break;
+		case "ArrowUp":
+			console.log("Move up");
+			snake.changeDirection(DIRECTIONS.UP);
+			event.preventDefault();
+			break;
+		case "ArrowDown":
+			console.log("Move down");
+			snake.changeDirection(DIRECTIONS.DOWN);
+			event.preventDefault();
+			break;
+		default:
+			console.log("Key unknown");
+	}
+}
+
+document.addEventListener('keydown', reactToKeyEvent);
 
 </script>
 
