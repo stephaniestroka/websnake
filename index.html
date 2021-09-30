@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Snake</title>
+</head>
+<body>
+
+<div>
+	<h1>Snake Game</h1>
+</div>
+<div>
+	<div style="margin: 24px 0;">
+		<button id="start-button" type="button" id="Start">Start</button>
+	</div>
+
+	<canvas id="board" width="500", height="500" style="border: 1px solid black;">
+	</canvas>
+
+</div>
+
+<script>
+
+const BOARD_WIDTH = 10;
+const BOARD_HEIGHT = 10;
+
+let canvas = document.getElementById("board");
+
+const SQUARE_WIDTH = canvas.width / BOARD_WIDTH;
+const SQUARE_HEIGHT = canvas.height / BOARD_HEIGHT;
+
+function drawBackground(ctx) {
+	/* draw background */
+	ctx.beginPath();
+	ctx.fillStyle = "lightgrey";
+	ctx.rect(0, 0, canvas.width, canvas.width);
+	ctx.fill();
+
+	let i, j = 0;
+	for (i = 0; i < BOARD_WIDTH; i++) {
+		for (j = 0; j < BOARD_HEIGHT; j++) {
+			ctx.beginPath();
+			ctx.strokeStyle = "black";
+			ctx.rect((i * SQUARE_WIDTH), (j * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+			ctx.stroke();
+		}
+	}
+}
+
+function drawSnake(ctx, start_x) {
+	let i = 0;
+	let length = 3;
+	for (i = 0; i < length; i++) {
+		let square_x = (start_x - i) % BOARD_WIDTH; 
+
+		ctx.beginPath();
+		ctx.fillStyle = "black";
+		ctx.rect((square_x * SQUARE_WIDTH), (4 * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+		ctx.fill();
+	}
+}
+
+let controller = 0;
+let ctx = canvas.getContext("2d");
+let pos = 0;
+
+drawBackground(ctx);
+
+let start_button = document.getElementById("start-button");
+start_button.addEventListener("click", function() {
+	if (controller != 0) {
+		clearInterval(controller);
+		controller = 0;
+	} else {
+		controller = setInterval(function() {
+				drawBackground(ctx);
+				drawSnake(ctx, pos);
+				pos = pos + 1;
+				}, 500);
+	}
+
+});
+
+</script>
+
+</body>
+</html>
