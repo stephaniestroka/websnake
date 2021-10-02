@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Snake</title>
+</head>
+
+<body style="padding: 16px 24px; font-family: Roboto; font-size:18px; background-color: #eee;">
+
+    <h1>Snake Game</h1>
+
+    <div style="display: flex; flex-direction: row;">
+        <div style="width: 400px;">
+            <p><a href="https://en.wikipedia.org/wiki/Snake_(video_game_genre)">Snake</a> is the common name for a video
+                game concept where the player maneuvers a line which grows in length, with the line itself being a
+                primary obstacle.</p>
+        </div>
+        <img style="width: 300px; margin-left: 24px;"
+            src="https://cdn.pixabay.com/photo/2012/05/02/19/51/snake-46150_1280.png">
+    </div>
+
+    <div>
+        <table style="border: 1px dotted; padding: 8px; background-color: rgb(218, 218, 218); width: 300px;">
+            <tr>
+                <th style="text-align: start;">Name</th>
+                <th style="text-align: start;">Score</th>
+            </tr>
+            <tr>
+                <td>Steffi</td>
+                <td>999</td>
+            </tr>
+            <tr>
+                <td>Kaspar</td>
+                <td>998</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="margin-top: 16px;">
+        <button id="start-button"
+            style="border: 2px rgb(35, 112, 255) solid; font-size: 22px; background-color: rgb(109, 160, 255); color: white; font-weight: 600;">START</button>
+    </div>
+
+    <canvas id="board" width="500" , height="500" style="border: 1px solid black; margin-top: 16px;">
+    </canvas>
+
+    <!-- Change to display: flex if you want to see it -->
+    <div
+        style="width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.5); display: none; flex-direction: row; justify-content: center; align-items: center;">
+        <p
+            style="font-size: 40px; font-weight: 600; color:darkmagenta; text-align: center; background-color: white; padding: 32px; ">
+            GAME OVER</p>
+    </div>
+
+    <script>
+        const BOARD_WIDTH = 10;
+        const BOARD_HEIGHT = 10;
+
+        let canvas = document.getElementById("board");
+
+        const SQUARE_WIDTH = canvas.width / BOARD_WIDTH;
+        const SQUARE_HEIGHT = canvas.height / BOARD_HEIGHT;
+
+        const DIRECTIONS = {
+            UP: "up",
+            DOWN: "down",
+            RIGHT: "right",
+            LEFT: "left",
+        }
+
+        function isHorizontal(direction) {
+            return direction == DIRECTIONS.RIGHT || direction == DIRECTIONS.LEFT;
+        }
+
+        function isVertical(direction) {
+            return !isHorizontal(direction);
+        }
+
+        function getOpposite(direction) {
+            switch (direction) {
+                case DIRECTIONS.UP:
+                    return DIRECTIONS.DOWN;
+                case DIRECTIONS.DOWN:
+                    return DIRECTIONS.UP;
+                case DIRECTIONS.LEFT:
+                    return DIRECTIONS.RIGHT;
+                case DIRECTIONS.RIGHT:
+                    return DIRECTIONS.LEFT;
+            }
+        }
+
+        class Point {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
+        function getNextPos(position, direction) {
+            switch (direction) {
+                case DIRECTIONS.UP:
+                    return new Point(position.x, position.y - 1);
+                case DIRECTIONS.DOWN:
+                    return new Point(position.x, position.y + 1);
+                case DIRECTIONS.LEFT:
+                    return new Point(position.x - 1, position.y);
+                case DIRECTIONS.RIGHT:
+                    return new Point(position.x + 1, position.y);
+            }
+        }
+
+        function drawBackground(ctx) {
+            ctx.beginPath();
+            ctx.fillStyle = "lightgrey";
+            ctx.rect(0, 0, canvas.width, canvas.width);
+            ctx.fill();
+
+            let i, j = 0;
+            for (i = 0; i < BOARD_WIDTH; i++) {
+                for (j = 0; j < BOARD_HEIGHT; j++) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = "black";
+                    ctx.rect((i * SQUARE_WIDTH), (j * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function mod(n, m) {
+	        return ((n % m) + m) % m;
+        }
+
+        // A snake consists of multiple snake parts, linked to the preceiding SnakePart.
+        // If there is no preceiding SnakePart, we are at the head.
+        class SnakePart {
+            // if previous == null, we are at the head
+            constructor(previous, position) {
+                this.previous = previous;
+                this.position = position;
+            }
+
+            // Draws the snake part on the canvas and returns the previous snake part.
+            draw(ctx) {
+                let square_x = mod(this.position.x, BOARD_WIDTH);
+                let square_y = mod(this.position.y, BOARD_WIDTH);
+
+                ctx.beginPath();
+                ctx.fillStyle = "black";
+                ctx.rect((square_x * SQUARE_WIDTH), (square_y * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+                ctx.fill();
+                return this.previous;
+            }
+
+            // Drags the tail forward and returns the previous snake part.
+			// Does not move if there is no previous snake part (= head).
+			drag() {
+				if (this.previous != null) {
+					this.position = this.previous.position;
+				}
+				return this.previous;
+			}
+
+            debug() {
+                let square_x = mod(this.position.x, BOARD_WIDTH);
+                let square_y = mod(this.position.y, BOARD_WIDTH);
+
+                return `(${square_x}, ${square_y})`;
+            }
+        }
+
+        // A Snake consists of a certain amount of SnakeParts (= length), has a 
+        // starting position and a direction that it heads towards.
+        class Snake {
+            constructor(length, start_pos, direction) {
+                this.length = length;
+                this.direction = direction;
+                let snake_parts = this.createSnakeParts(length, start_pos, direction);
+                this.head = snake_parts.head;
+                this.tail = snake_parts.tail;
+            }
+
+            createSnakeParts(length, start_pos, direction) {
+                let head = new SnakePart(null, start_pos);
+                console.log("Snake head created: " + head.previous);
+                let previous = head;
+                let i = 1;
+                for (i = 1; i < length; i++) {
+                    previous = new SnakePart(previous, getNextPos(previous.position, getOpposite(direction)));
+                }
+                let tail = previous;
+                console.log("Snake tail created: " + length);
+                return { head, tail };
+            }
+
+            draw(ctx) {
+                let previous = this.tail.draw(ctx);
+                while (previous != null) {
+                    previous = previous.draw(ctx);
+                }
+            }
+
+            grow() {
+				this.growFromTail = true;
+            }
+
+            move() {
+                // When growing, we need to remember where the last tail was.
+                let last_tail_position = this.tail.position;
+                let previous = this.tail.drag();
+				while (previous != null) {
+					previous = previous.drag();
+				}
+				this.head.position = getNextPos(this.head.position, this.direction);
+                if (this.growFromTail) {
+                    this.tail = new SnakePart(this.tail, last_tail_position);
+                    this.growFromTail = false;
+                }
+			}
+
+			changeDirection(direction) {
+				if (isHorizontal(direction) && isHorizontal(this.direction)) {
+					return;
+				}
+				if (isVertical(direction) && isVertical(this.direction)) {
+					return;
+				}
+				this.direction = direction;
+			}
+
+            debug() {
+                let previous = this.tail.previous;
+                let dbg_str = this.tail.debug();
+                while (previous != null) {
+                    dbg_str = `${dbg_str} ${previous.debug()}`;
+                    previous = previous.previous;
+                }
+                return dbg_str;
+            }
+        }
+
+        let controller = 0;
+        let ctx = canvas.getContext("2d");
+        let start = new Point(2, 4);
+
+        drawBackground(ctx);
+        let snake = new Snake(3, start, DIRECTIONS.RIGHT);
+		console.log(`Snake created: ${snake.debug()}`);
+
+        let start_button = document.getElementById("start-button");
+        start_button.addEventListener("click", function () {
+            if (controller != 0) {
+                start_button.innerHTML = "START";
+                clearInterval(controller);
+                controller = 0;
+            } else {
+                start_button.innerHTML = "STOP";
+                controller = setInterval(function () {
+                    drawBackground(ctx);
+                    snake.draw(ctx);
+                    snake.move();
+                }, 500);
+            }
+
+        });
+
+		function logKey(e) {
+			console.log(`${e.code} ${e.keyCode}`);
+		}
+
+		function reactToKeyEvent(event) {
+			switch (event.code) {
+				case "ArrowRight":
+					console.log("Move right");
+					snake.changeDirection(DIRECTIONS.RIGHT);
+					event.preventDefault();
+					break;
+				case "ArrowLeft":
+					console.log("Move left");
+					snake.changeDirection(DIRECTIONS.LEFT);
+					event.preventDefault();
+					break;
+				case "ArrowUp":
+					console.log("Move up");
+					snake.changeDirection(DIRECTIONS.UP);
+					event.preventDefault();
+					break;
+				case "ArrowDown":
+					console.log("Move down");
+					snake.changeDirection(DIRECTIONS.DOWN);
+					event.preventDefault();
+					break;
+                case "KeyG":
+					snake.grow();
+					event.preventDefault();
+					break;
+				default:
+					console.log("Key unknown");
+			}
+		}
+
+		document.addEventListener('keydown', reactToKeyEvent);
+
+    </script>
+</body>
+
+</html>

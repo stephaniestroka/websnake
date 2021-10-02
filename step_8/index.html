@@ -68,6 +68,19 @@
             LEFT: "left",
         }
 
+        function getOpposite(direction) {
+            switch (direction) {
+                case DIRECTIONS.UP:
+                    return DIRECTIONS.DOWN;
+                case DIRECTIONS.DOWN:
+                    return DIRECTIONS.UP;
+                case DIRECTIONS.LEFT:
+                    return DIRECTIONS.RIGHT;
+                case DIRECTIONS.RIGHT:
+                    return DIRECTIONS.LEFT;
+            }
+        }
+
         class Point {
             constructor(x, y) {
                 this.x = x;
@@ -109,25 +122,100 @@
 	        return ((n % m) + m) % m;
         }
 
-        function drawSnake(ctx, start_pos) {
-            let i = 0;
-            let length = 3;
-            for (i = 0; i < length; i++) {
-                let square_x = mod((start_pos.x - i), BOARD_WIDTH);
-                let square_y = start_pos.y;
+        // A snake consists of multiple snake parts, linked to the preceiding SnakePart.
+        // If there is no preceiding SnakePart, we are at the head.
+        class SnakePart {
+            // if previous == null, we are at the head
+            constructor(previous, position) {
+                this.previous = previous;
+                this.position = position;
+            }
+
+            draw(ctx) {
+                let square_x = mod(this.position.x, BOARD_WIDTH);
+                let square_y = mod(this.position.y, BOARD_WIDTH);
 
                 ctx.beginPath();
                 ctx.fillStyle = "black";
                 ctx.rect((square_x * SQUARE_WIDTH), (square_y * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
                 ctx.fill();
+                return this.previous;
+            }
+
+            // Drags the tail forward and returns the previous snake part.
+			// Does not move if there is no previous snake part (= head).
+			drag() {
+				if (this.previous != null) {
+					this.position = this.previous.position;
+				}
+				return this.previous;
+			}
+
+            debug() {
+                let square_x = mod(this.position.x, BOARD_WIDTH);
+                let square_y = mod(this.position.y, BOARD_WIDTH);
+
+                return `(${square_x}, ${square_y})`;
+            }
+        }
+
+        // A Snake consists of a certain amount of SnakeParts (= length), has a 
+        // starting position and a direction that it heads towards.
+        class Snake {
+            constructor(length, start_pos, direction) {
+                this.length = length;
+                this.direction = direction;
+                let snake_parts = this.createSnakeParts(length, start_pos, direction);
+                this.head = snake_parts.head;
+                this.tail = snake_parts.tail;
+            }
+
+            createSnakeParts(length, start_pos, direction) {
+                let head = new SnakePart(null, start_pos);
+                console.log("Snake head created: " + head.previous);
+                let previous = head;
+                let i = 1;
+                for (i = 1; i < length; i++) {
+                    previous = new SnakePart(previous, getNextPos(previous.position, getOpposite(direction)));
+                }
+                let tail = previous;
+                console.log("Snake tail created: " + length);
+                return { head, tail };
+            }
+
+            draw(ctx) {
+                let previous = this.tail.draw(ctx);
+                while (previous != null) {
+                    previous = previous.draw(ctx);
+                }
+            }
+
+            move() {
+				let previous = this.tail.drag();
+				while (previous != null) {
+					previous = previous.drag();
+				}
+				this.head.position = getNextPos(this.head.position, this.direction);
+			}
+
+            debug() {
+                let previous = this.tail.previous;
+                let dbg_str = this.tail.debug();
+                while (previous != null) {
+                    dbg_str = `${dbg_str} ${previous.debug()}`;
+                    previous = previous.previous;
+                }
+                return dbg_str;
             }
         }
 
         let controller = 0;
         let ctx = canvas.getContext("2d");
-        let pos = new Point(2, 4);
+        let start = new Point(2, 4);
 
         drawBackground(ctx);
+        let snake = new Snake(3, start, DIRECTIONS.RIGHT);
+		console.log(`Snake created: ${snake.debug()}`);
 
         let start_button = document.getElementById("start-button");
         start_button.addEventListener("click", function () {
@@ -139,8 +227,8 @@
                 start_button.innerHTML = "STOP";
                 controller = setInterval(function () {
                     drawBackground(ctx);
-                    drawSnake(ctx, pos);
-                    pos = getNextPos(pos, DIRECTIONS.RIGHT);
+                    snake.draw(ctx);
+                    snake.move();
                 }, 500);
             }
 
