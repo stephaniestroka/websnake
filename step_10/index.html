@@ -8,6 +8,7 @@
 <body style="padding: 16px 24px; font-family: Roboto; font-size:18px; background-color: #eee;">
 
     <h1>Snake Game</h1>
+    <h2>Javascript - Growing the snake</h2>
 
     <div style="display: flex; flex-direction: row;">
         <div style="width: 400px;">
@@ -127,7 +128,7 @@
         }
 
         function mod(n, m) {
-	        return ((n % m) + m) % m;
+            return ((n % m) + m) % m;
         }
 
         // A snake consists of multiple snake parts, linked to the preceiding SnakePart.
@@ -152,13 +153,13 @@
             }
 
             // Drags the tail forward and returns the previous snake part.
-			// Does not move if there is no previous snake part (= head).
-			drag() {
-				if (this.previous != null) {
-					this.position = this.previous.position;
-				}
-				return this.previous;
-			}
+            // Does not move if there is no previous snake part (= head).
+            drag() {
+                if (this.previous != null) {
+                    this.position = this.previous.position;
+                }
+                return this.previous;
+            }
 
             debug() {
                 let square_x = mod(this.position.x, BOARD_WIDTH);
@@ -200,32 +201,32 @@
             }
 
             grow() {
-				this.growFromTail = true;
+                this.growFromTail = true;
             }
 
             move() {
                 // When growing, we need to remember where the last tail was.
                 let last_tail_position = this.tail.position;
                 let previous = this.tail.drag();
-				while (previous != null) {
-					previous = previous.drag();
-				}
-				this.head.position = getNextPos(this.head.position, this.direction);
+                while (previous != null) {
+                    previous = previous.drag();
+                }
+                this.head.position = getNextPos(this.head.position, this.direction);
                 if (this.growFromTail) {
                     this.tail = new SnakePart(this.tail, last_tail_position);
                     this.growFromTail = false;
                 }
-			}
+            }
 
-			changeDirection(direction) {
-				if (isHorizontal(direction) && isHorizontal(this.direction)) {
-					return;
-				}
-				if (isVertical(direction) && isVertical(this.direction)) {
-					return;
-				}
-				this.direction = direction;
-			}
+            changeDirection(direction) {
+                if (isHorizontal(direction) && isHorizontal(this.direction)) {
+                    return;
+                }
+                if (isVertical(direction) && isVertical(this.direction)) {
+                    return;
+                }
+                this.direction = direction;
+            }
 
             debug() {
                 let previous = this.tail.previous;
@@ -244,7 +245,7 @@
 
         drawBackground(ctx);
         let snake = new Snake(3, start, DIRECTIONS.RIGHT);
-		console.log(`Snake created: ${snake.debug()}`);
+        console.log(`Snake created: ${snake.debug()}`);
 
         let start_button = document.getElementById("start-button");
         start_button.addEventListener("click", function () {
@@ -263,44 +264,46 @@
 
         });
 
-		function logKey(e) {
-			console.log(`${e.code} ${e.keyCode}`);
-		}
+        function logKey(e) {
+            console.log(`${e.code} ${e.keyCode}`);
+        }
 
-		function reactToKeyEvent(event) {
-			switch (event.code) {
-				case "ArrowRight":
-					console.log("Move right");
-					snake.changeDirection(DIRECTIONS.RIGHT);
-					event.preventDefault();
-					break;
-				case "ArrowLeft":
-					console.log("Move left");
-					snake.changeDirection(DIRECTIONS.LEFT);
-					event.preventDefault();
-					break;
-				case "ArrowUp":
-					console.log("Move up");
-					snake.changeDirection(DIRECTIONS.UP);
-					event.preventDefault();
-					break;
-				case "ArrowDown":
-					console.log("Move down");
-					snake.changeDirection(DIRECTIONS.DOWN);
-					event.preventDefault();
-					break;
+        function reactToKeyEvent(event) {
+            switch (event.code) {
+                case "ArrowRight":
+                    console.log("Move right");
+                    snake.changeDirection(DIRECTIONS.RIGHT);
+                    event.preventDefault();
+                    break;
+                case "ArrowLeft":
+                    console.log("Move left");
+                    snake.changeDirection(DIRECTIONS.LEFT);
+                    event.preventDefault();
+                    break;
+                case "ArrowUp":
+                    console.log("Move up");
+                    snake.changeDirection(DIRECTIONS.UP);
+                    event.preventDefault();
+                    break;
+                case "ArrowDown":
+                    console.log("Move down");
+                    snake.changeDirection(DIRECTIONS.DOWN);
+                    event.preventDefault();
+                    break;
                 case "KeyG":
-					snake.grow();
-					event.preventDefault();
-					break;
-				default:
-					console.log("Key unknown");
-			}
-		}
+                    snake.grow();
+                    event.preventDefault();
+                    break;
+                default:
+                    console.log("Key unknown");
+            }
+        }
 
-		document.addEventListener('keydown', reactToKeyEvent);
+        document.addEventListener('keydown', reactToKeyEvent);
 
     </script>
+    <!-- Task: -->
+    <!-- + Create a new class for "Fruit" -->
 </body>
 
 </html>

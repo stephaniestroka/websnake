@@ -8,6 +8,7 @@
 <body style="padding: 16px 24px; font-family: Roboto; font-size:18px; background-color: #eee;">
 
     <h1>Snake Game</h1>
+    <h2>Javascript - Drawing some random fruit</h2>
 
     <div style="display: flex; flex-direction: row;">
         <div style="width: 400px;">
@@ -133,7 +134,7 @@
         }
 
         function mod(n, m) {
-	        return ((n % m) + m) % m;
+            return ((n % m) + m) % m;
         }
 
         function getRandomInt(max) {
@@ -162,13 +163,13 @@
             }
 
             // Drags the tail forward and returns the previous snake part.
-			// Does not move if there is no previous snake part (= head).
-			drag() {
-				if (this.previous != null) {
-					this.position = this.previous.position;
-				}
-				return this.previous;
-			}
+            // Does not move if there is no previous snake part (= head).
+            drag() {
+                if (this.previous != null) {
+                    this.position = this.previous.position;
+                }
+                return this.previous;
+            }
 
             // Checks whether the given location is where the snake part is.
             occupiesLocation(location) {
@@ -215,32 +216,32 @@
             }
 
             grow() {
-				this.growFromTail = true;
+                this.growFromTail = true;
             }
 
             move() {
                 // When growing, we need to remember where the last tail was.
                 let last_tail_position = this.tail.position;
                 let previous = this.tail.drag();
-				while (previous != null) {
-					previous = previous.drag();
-				}
-				this.head.position = getNextPos(this.head.position, this.direction);
+                while (previous != null) {
+                    previous = previous.drag();
+                }
+                this.head.position = getNextPos(this.head.position, this.direction);
                 if (this.growFromTail) {
                     this.tail = new SnakePart(this.tail, last_tail_position);
                     this.growFromTail = false;
                 }
-			}
+            }
 
-			changeDirection(direction) {
-				if (isHorizontal(direction) && isHorizontal(this.direction)) {
-					return;
-				}
-				if (isVertical(direction) && isVertical(this.direction)) {
-					return;
-				}
-				this.direction = direction;
-			}
+            changeDirection(direction) {
+                if (isHorizontal(direction) && isHorizontal(this.direction)) {
+                    return;
+                }
+                if (isVertical(direction) && isVertical(this.direction)) {
+                    return;
+                }
+                this.direction = direction;
+            }
 
             occupiesLocation(location) {
                 if (snake.tail.occupiesLocation(location)) {
@@ -267,7 +268,7 @@
             }
         }
 
-                // A fruit is randomly generated and placed somewhere on the board, except when
+        // A fruit is randomly generated and placed somewhere on the board, except when
         // the position is already occupied by a snake.
         class Fruit {
 
@@ -300,7 +301,7 @@
         let fruit;
 
         drawBackground(ctx);
-        
+
         let start_button = document.getElementById("start-button");
         start_button.addEventListener("click", function () {
             if (controller != 0) {
@@ -321,49 +322,50 @@
 
         });
 
-		function logKey(e) {
-			console.log(`${e.code} ${e.keyCode}`);
-		}
+        function logKey(e) {
+            console.log(`${e.code} ${e.keyCode}`);
+        }
 
-		function reactToKeyEvent(event) {
-			switch (event.code) {
-				case "ArrowRight":
-					console.log("Move right");
-					snake.changeDirection(DIRECTIONS.RIGHT);
-					event.preventDefault();
-					break;
-				case "ArrowLeft":
-					console.log("Move left");
-					snake.changeDirection(DIRECTIONS.LEFT);
-					event.preventDefault();
-					break;
-				case "ArrowUp":
-					console.log("Move up");
-					snake.changeDirection(DIRECTIONS.UP);
-					event.preventDefault();
-					break;
-				case "ArrowDown":
-					console.log("Move down");
-					snake.changeDirection(DIRECTIONS.DOWN);
-					event.preventDefault();
-					break;
+        function reactToKeyEvent(event) {
+            switch (event.code) {
+                case "ArrowRight":
+                    console.log("Move right");
+                    snake.changeDirection(DIRECTIONS.RIGHT);
+                    event.preventDefault();
+                    break;
+                case "ArrowLeft":
+                    console.log("Move left");
+                    snake.changeDirection(DIRECTIONS.LEFT);
+                    event.preventDefault();
+                    break;
+                case "ArrowUp":
+                    console.log("Move up");
+                    snake.changeDirection(DIRECTIONS.UP);
+                    event.preventDefault();
+                    break;
+                case "ArrowDown":
+                    console.log("Move down");
+                    snake.changeDirection(DIRECTIONS.DOWN);
+                    event.preventDefault();
+                    break;
                 case "KeyG":
-					snake.grow();
-					event.preventDefault();
-					break;
+                    snake.grow();
+                    event.preventDefault();
+                    break;
                 case "KeyF":
-					fruit = new Fruit();
-                    
-					event.preventDefault();
-					break;
-				default:
-					console.log("Key unknown");
-			}
-		}
+                    fruit = new Fruit();
+                    event.preventDefault();
+                    break;
+                default:
+                    console.log("Key unknown");
+            }
+        }
 
-		document.addEventListener('keydown', reactToKeyEvent);
+        document.addEventListener('keydown', reactToKeyEvent);
 
     </script>
+    <!-- Task: -->
+    <!-- + Implement the "Ate Fruit" detection and reaction -->
 </body>
 
 </html>

@@ -8,6 +8,7 @@
 <body style="padding: 16px 24px; font-family: Roboto; font-size:18px; background-color: #eee;">
 
     <h1>Snake Game</h1>
+    <h2>Javascript - More classes/data structures</h2>
 
     <div style="display: flex; flex-direction: row;">
         <div style="width: 400px;">
@@ -127,7 +128,7 @@
         }
 
         function mod(n, m) {
-	        return ((n % m) + m) % m;
+            return ((n % m) + m) % m;
         }
 
         // A snake consists of multiple snake parts, linked to the preceiding SnakePart.
@@ -206,7 +207,7 @@
 
         drawBackground(ctx);
         let snake = new Snake(3, start, DIRECTIONS.RIGHT);
-		console.log(`Snake created: ${snake.debug()}`);
+        console.log(`Snake created: ${snake.debug()}`);
 
         let start_button = document.getElementById("start-button");
         start_button.addEventListener("click", function () {
@@ -225,6 +226,8 @@
         });
 
     </script>
+    <!-- Task: -->
+    <!-- + Make the snake move (again) -->
 </body>
 
 </html>

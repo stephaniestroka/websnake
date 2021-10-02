@@ -8,6 +8,7 @@
 <body style="padding: 16px 24px; font-family: Roboto; font-size:18px; background-color: #eee;">
 
     <h1>Snake Game</h1>
+    <h2>Javascript - New methods for Snake and SnakeParts (moving) </h2>
 
     <div style="display: flex; flex-direction: row;">
         <div style="width: 400px;">
@@ -119,7 +120,7 @@
         }
 
         function mod(n, m) {
-	        return ((n % m) + m) % m;
+            return ((n % m) + m) % m;
         }
 
         // A snake consists of multiple snake parts, linked to the preceiding SnakePart.
@@ -143,13 +144,13 @@
             }
 
             // Drags the tail forward and returns the previous snake part.
-			// Does not move if there is no previous snake part (= head).
-			drag() {
-				if (this.previous != null) {
-					this.position = this.previous.position;
-				}
-				return this.previous;
-			}
+            // Does not move if there is no previous snake part (= head).
+            drag() {
+                if (this.previous != null) {
+                    this.position = this.previous.position;
+                }
+                return this.previous;
+            }
 
             debug() {
                 let square_x = mod(this.position.x, BOARD_WIDTH);
@@ -191,12 +192,12 @@
             }
 
             move() {
-				let previous = this.tail.drag();
-				while (previous != null) {
-					previous = previous.drag();
-				}
-				this.head.position = getNextPos(this.head.position, this.direction);
-			}
+                let previous = this.tail.drag();
+                while (previous != null) {
+                    previous = previous.drag();
+                }
+                this.head.position = getNextPos(this.head.position, this.direction);
+            }
 
             debug() {
                 let previous = this.tail.previous;
@@ -215,7 +216,7 @@
 
         drawBackground(ctx);
         let snake = new Snake(3, start, DIRECTIONS.RIGHT);
-		console.log(`Snake created: ${snake.debug()}`);
+        console.log(`Snake created: ${snake.debug()}`);
 
         let start_button = document.getElementById("start-button");
         start_button.addEventListener("click", function () {
@@ -235,6 +236,8 @@
         });
 
     </script>
+    <!-- Task: -->
+    <!-- + Change direction of movement -->
 </body>
 
 </html>
