@@ -2,140 +2,170 @@
 <html>
 
 <head>
-	<title>Snake</title>
+    <title>Snake</title>
 </head>
 
 <body style="padding: 16px 24px; font-family: Roboto; font-size:18px; background-color: #eee;">
 
-	<h1>Snake Game</h1>
+    <h1>Snake Game</h1>
 
-	<div style="display: flex; flex-direction: row;">
-		<div style="width: 400px;">
-			<p><a href="https://en.wikipedia.org/wiki/Snake_(video_game_genre)">Snake</a> is the common name for a video
-				game concept where the player maneuvers a line which grows in length, with the line itself being a
-				primary obstacle.</p>
-		</div>
-		<img style="width: 300px; margin-left: 24px;"
-			src="https://cdn.pixabay.com/photo/2012/05/02/19/51/snake-46150_1280.png">
-	</div>
+    <div style="display: flex; flex-direction: row;">
+        <div style="width: 400px;">
+            <p><a href="https://en.wikipedia.org/wiki/Snake_(video_game_genre)">Snake</a> is the common name for a video
+                game concept where the player maneuvers a line which grows in length, with the line itself being a
+                primary obstacle.</p>
+        </div>
+        <img style="width: 300px; margin-left: 24px;"
+            src="https://cdn.pixabay.com/photo/2012/05/02/19/51/snake-46150_1280.png">
+    </div>
 
-	<div>
-		<table style="border: 1px dotted; padding: 8px; background-color: rgb(218, 218, 218); width: 300px;">
-			<tr>
-				<th style="text-align: start;">Name</th>
-				<th style="text-align: start;">Score</th>
-			</tr>
-			<tr>
-				<td>Steffi</td>
-				<td>999</td>
-			</tr>
-			<tr>
-				<td>Kaspar</td>
-				<td>998</td>
-			</tr>
-		</table>
-	</div>
+    <div>
+        <table style="border: 1px dotted; padding: 8px; background-color: rgb(218, 218, 218); width: 300px;">
+            <tr>
+                <th style="text-align: start;">Name</th>
+                <th style="text-align: start;">Score</th>
+            </tr>
+            <tr>
+                <td>Steffi</td>
+                <td>999</td>
+            </tr>
+            <tr>
+                <td>Kaspar</td>
+                <td>998</td>
+            </tr>
+        </table>
+    </div>
 
-	<div style="margin-top: 16px;">
-		<button id="start-button"
-			style="border: 2px rgb(35, 112, 255) solid; font-size: 22px; background-color: rgb(109, 160, 255); color: white; font-weight: 600;">START</button>
-	</div>
+    <div style="margin-top: 16px;">
+        <button id="start-button"
+            style="border: 2px rgb(35, 112, 255) solid; font-size: 22px; background-color: rgb(109, 160, 255); color: white; font-weight: 600;">START</button>
+    </div>
 
-	<canvas id="board" width="500" , height="500" style="border: 1px solid black; margin-top: 16px;">
-	</canvas>
+    <canvas id="board" width="500" , height="500" style="border: 1px solid black; margin-top: 16px;">
+    </canvas>
 
-	<!-- Change to display: flex if you want to see it -->
-	<div
-		style="width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.5); display: none; flex-direction: row; justify-content: center; align-items: center;">
-		<p
-			style="font-size: 40px; font-weight: 600; color:darkmagenta; text-align: center; background-color: white; padding: 32px; ">
-			GAME OVER</p>
-	</div>
+    <!-- Change to display: flex if you want to see it -->
+    <div id="game-over-overlay"
+        style="width: 100%; height: 100%; position: fixed; top: 0; left: 0; background-color: rgba(0, 0, 0, 0.5); display: none; flex-direction: row; justify-content: center; align-items: center;">
+        <p
+            style="font-size: 40px; font-weight: 600; color:darkmagenta; text-align: center; background-color: white; padding: 32px; ">
+            GAME OVER</p>
+    </div>
 
-	<script>
+    <script>
+        const BOARD_WIDTH = 10;
+        const BOARD_HEIGHT = 10;
 
-		const BOARD_WIDTH = 10;
-		const BOARD_HEIGHT = 10;
+        let canvas = document.getElementById("board");
 
-		let canvas = document.getElementById("board");
+        const SQUARE_WIDTH = canvas.width / BOARD_WIDTH;
+        const SQUARE_HEIGHT = canvas.height / BOARD_HEIGHT;
 
-		const SQUARE_WIDTH = canvas.width / BOARD_WIDTH;
-		const SQUARE_HEIGHT = canvas.height / BOARD_HEIGHT;
+        let ctx = canvas.getContext("2d");
 
-		function drawBackground(ctx) {
-			/* draw background */
-			ctx.beginPath();
-			ctx.fillStyle = "lightgrey";
-			ctx.rect(0, 0, canvas.width, canvas.width);
-			ctx.fill();
+        const DIRECTIONS = {
+            UP: "up",
+            DOWN: "down",
+            RIGHT: "right",
+            LEFT: "left",
+        }
 
-			let i, j = 0;
-			for (i = 0; i < BOARD_WIDTH; i++) {
-				for (j = 0; j < BOARD_HEIGHT; j++) {
-					ctx.beginPath();
-					ctx.strokeStyle = "black";
-					ctx.rect((i * SQUARE_WIDTH), (j * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
-					ctx.stroke();
-				}
-			}
-		}
+        function isHorizontal(direction) {
+            return direction == DIRECTIONS.RIGHT || direction == DIRECTIONS.LEFT;
+        }
 
-		const DIRECTIONS = {
-			UP: "up",
-			DOWN: "down",
-			RIGHT: "right",
-			LEFT: "left",
-		}
+        function isVertical(direction) {
+            return !isHorizontal(direction);
+        }
 
-		function isHorizontal(direction) {
-			return direction == DIRECTIONS.RIGHT || direction == DIRECTIONS.LEFT;
-		}
+        function getOpposite(direction) {
+            switch (direction) {
+                case DIRECTIONS.UP:
+                    return DIRECTIONS.DOWN;
+                case DIRECTIONS.DOWN:
+                    return DIRECTIONS.UP;
+                case DIRECTIONS.LEFT:
+                    return DIRECTIONS.RIGHT;
+                case DIRECTIONS.RIGHT:
+                    return DIRECTIONS.LEFT;
+            }
+        }
 
-		function isVertical(direction) {
-			return !isHorizontal(direction);
-		}
+        class Point {
+            constructor(x, y) {
+                this.x = mod(x, BOARD_WIDTH);
+                this.y = mod(y, BOARD_HEIGHT);
+            }
 
-		function getOpposite(direction) {
-			switch (direction) {
-				case DIRECTIONS.UP:
-					return DIRECTIONS.DOWN;
-				case DIRECTIONS.DOWN:
-					return DIRECTIONS.UP;
-				case DIRECTIONS.LEFT:
-					return DIRECTIONS.RIGHT;
-				case DIRECTIONS.RIGHT:
-					return DIRECTIONS.LEFT;
-			}
-		}
+            equals(other) {
+                return this.x == other.x && this.y == other.y;
+            }
 
-		class Point {
-			constructor(x, y) {
-				this.x = x;
-				this.y = y;
-			}
-		}
+            toString() {
+                return `(${this.x}, ${this.y})`;
+            }
+        }
 
-		function getNextPos(position, direction) {
-			switch (direction) {
-				case DIRECTIONS.UP:
-					return new Point(position.x, position.y - 1);
-				case DIRECTIONS.DOWN:
-					return new Point(position.x, position.y + 1);
-				case DIRECTIONS.LEFT:
-					return new Point(position.x - 1, position.y);
-				case DIRECTIONS.RIGHT:
-					return new Point(position.x + 1, position.y);
-			}
-		}
+        function getNextPos(position, direction) {
+            switch (direction) {
+                case DIRECTIONS.UP:
+                    return new Point(position.x, position.y - 1);
+                case DIRECTIONS.DOWN:
+                    return new Point(position.x, position.y + 1);
+                case DIRECTIONS.LEFT:
+                    return new Point(position.x - 1, position.y);
+                case DIRECTIONS.RIGHT:
+                    return new Point(position.x + 1, position.y);
+            }
+        }
 
-		class SnakePart {
-			// if previous == null, we are at the head
-			constructor(previous, position) {
-				this.previous = previous;
-				this.position = position;
-			}
+        function drawBackground(ctx) {
+            ctx.beginPath();
+            ctx.fillStyle = "lightgrey";
+            ctx.rect(0, 0, canvas.width, canvas.width);
+            ctx.fill();
 
-			// Drags the part forward and returns the previous snake part.
+            let i, j = 0;
+            for (i = 0; i < BOARD_WIDTH; i++) {
+                for (j = 0; j < BOARD_HEIGHT; j++) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = "black";
+                    ctx.rect((i * SQUARE_WIDTH), (j * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function mod(n, m) {
+	        return ((n % m) + m) % m;
+        }
+
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        // A snake consists of multiple snake parts, linked to the preceiding SnakePart.
+        // If there is no preceiding SnakePart, we are at the head.
+        class SnakePart {
+            // if previous == null, we are at the head
+            constructor(previous, position) {
+                this.previous = previous;
+                this.position = position;
+            }
+
+            // Draws the snake part on the canvas and returns the previous snake part.
+            draw(ctx) {
+                let square_x = mod(this.position.x, BOARD_WIDTH);
+                let square_y = mod(this.position.y, BOARD_WIDTH);
+
+                ctx.beginPath();
+                ctx.fillStyle = "black";
+                ctx.rect((square_x * SQUARE_WIDTH), (square_y * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+                ctx.fill();
+                return this.previous;
+            }
+
+            // Drags the tail forward and returns the previous snake part.
 			// Does not move if there is no previous snake part (= head).
 			drag() {
 				if (this.previous != null) {
@@ -144,54 +174,77 @@
 				return this.previous;
 			}
 
-			draw(ctx) {
-				let square_x = mod(this.position.x, BOARD_WIDTH);
-				let square_y = mod(this.position.y, BOARD_WIDTH);
+            // Checks whether the given location is where the snake part is.
+            occupiesLocation(location) {
+                return location.equals(this.position);
+            }
 
-				ctx.beginPath();
-				ctx.fillStyle = "black";
-				ctx.rect((square_x * SQUARE_WIDTH), (square_y * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
-				ctx.fill();
-				return this.previous;
-			}
+            debug() {
+                let square_x = mod(this.position.x, BOARD_WIDTH);
+                let square_y = mod(this.position.y, BOARD_WIDTH);
 
-			debug() {
-				let square_x = mod(this.position.x, BOARD_WIDTH);
-				let square_y = mod(this.position.y, BOARD_WIDTH);
+                return `(${square_x}, ${square_y})`;
+            }
+        }
 
-				return `(${square_x}, ${square_y})`;
-			}
-		}
+        // A Snake consists of a certain amount of SnakeParts (= length), has a 
+        // starting position and a direction that it heads towards.
+        class Snake {
+            constructor(length, start_pos, direction) {
+                this.length = length;
+                this.direction = direction;
+                let snake_parts = this.createSnakeParts(length, start_pos, direction);
+                this.head = snake_parts.head;
+                this.tail = snake_parts.tail;
+            }
 
-		function mod(n, m) {
-			return ((n % m) + m) % m;
-		}
+            createSnakeParts(length, start_pos, direction) {
+                let head = new SnakePart(null, start_pos);
+                console.log("Snake head created: " + head.previous);
+                let previous = head;
+                let i = 1;
+                for (i = 1; i < length; i++) {
+                    previous = new SnakePart(previous, getNextPos(previous.position, getOpposite(direction)));
+                }
+                let tail = previous;
+                console.log("Snake tail created: " + length);
+                return { head, tail };
+            }
 
-		class Snake {
-			constructor(length, start_pos, direction) {
-				this.length = length;
-				this.direction = direction;
-				let snake_parts = this.createSnakeParts(length, start_pos, direction);
-				this.head = snake_parts.head;
-				this.tail = snake_parts.tail;
-			}
+            draw(ctx) {
+                let previous = this.tail.draw(ctx);
+                while (previous != null) {
+                    previous = previous.draw(ctx);
+                }
+            }
 
-			createSnakeParts(length, start_pos, direction) {
-				let head = new SnakePart(null, start_pos);
-				console.log("Snake head created: " + head.previous);
-				let previous = head;
-				let i = 1;
-				for (i = 1; i < length; i++) {
-					previous = new SnakePart(previous, getNextPos(previous.position, getOpposite(direction)));
+            grow() {
+				this.growFromTail = true;
+            }
+
+            ate(fruit) {
+                let is_eaten = this.head.position.equals(fruit.location);
+                console.log(`head pos: ${this.head.position}, fruit pos: ${fruit.location} Is eaten: ${is_eaten}`);
+                return is_eaten;
+            }
+
+            move() {
+                // When growing, we need to remember where the last tail was.
+                let last_tail_position = this.tail.position;
+                let previous = this.tail.drag();
+				while (previous != null) {
+					previous = previous.drag();
 				}
-				let tail = previous;
-				console.log("Snake tail created: " + length);
-				return { head, tail };
-			}
-
-			grow() {
-				console.log(`tail pos: ${this.tail.position.x} ${this.tail.position.y}`);
-				this.tail = new SnakePart(this.tail, getNextPos(this.tail.position, getOpposite(this.direction)));
+				let new_head_position = getNextPos(this.head.position, this.direction);
+                if (this.occupiesLocation(new_head_position)) {
+                    return false;
+                }
+                this.head.position = new_head_position;
+                if (this.growFromTail) {
+                    this.tail = new SnakePart(this.tail, last_tail_position);
+                    this.growFromTail = false;
+                }
+                return true;
 			}
 
 			changeDirection(direction) {
@@ -204,22 +257,21 @@
 				this.direction = direction;
 			}
 
-			move() {
-				let previous = this.tail.drag();
-				while (previous != null) {
-					previous = previous.drag();
-				}
-				this.head.position = getNextPos(this.head.position, this.direction);
-			}
+            occupiesLocation(location) {
+                if (snake.tail.occupiesLocation(location)) {
+                    return true;
+                }
+                let previous_snake_part = snake.tail.previous;
+                while (previous_snake_part != null) {
+                    if (previous_snake_part.occupiesLocation(location)) {
+                        return true;
+                    }
+                    previous_snake_part = previous_snake_part.previous;
+                }
+                return false;
+            }
 
-			draw(ctx) {
-				let previous = this.tail.draw(ctx);
-				while (previous != null) {
-					previous = previous.draw(ctx);
-				}
-			}
-
-			debug() {
+            debug() {
                 let previous = this.tail.previous;
                 let dbg_str = this.tail.debug();
                 while (previous != null) {
@@ -228,33 +280,76 @@
                 }
                 return dbg_str;
             }
-		}
+        }
 
-		let controller = 0;
-		let ctx = canvas.getContext("2d");
+                // A fruit is randomly generated and placed somewhere on the board, except when
+        // the position is already occupied by a snake.
+        class Fruit {
 
-		drawBackground(ctx);
-		let snake = new Snake(3, new Point(2, 4), DIRECTIONS.RIGHT);
-		console.log(`Snake created: ${snake.debug()}`);
+            constructor() {
+                let location;
+                do {
+                    let x = getRandomInt(BOARD_WIDTH);
+                    let y = getRandomInt(BOARD_HEIGHT);
+                    location = new Point(x, y);
+                } while (snake.occupiesLocation(location));
+                this.location = location;
+            }
 
-		let start_button = document.getElementById("start-button");
-		start_button.addEventListener("click", function () {
-			if (controller != 0) {
-				start_button.innerHTML = "START";
-				clearInterval(controller);
-				controller = 0;
-			} else {
-				start_button.innerHTML = "STOP";
-				controller = setInterval(function () {
-					drawBackground(ctx);
-					snake.draw(ctx);
-					snake.move();
-					// console.log(`Snake updated: ${snake.debug()}`);
-				}, 500);
-			}
+            // Draws the fruit on the canvas.
+            draw(ctx) {
+                let square_x = mod(this.location.x, BOARD_WIDTH);
+                let square_y = mod(this.location.y, BOARD_WIDTH);
 
-		});
+                ctx.beginPath();
+                ctx.fillStyle = "red";
+                ctx.rect((square_x * SQUARE_WIDTH), (square_y * SQUARE_HEIGHT), SQUARE_WIDTH, SQUARE_HEIGHT);
+                ctx.fill();
+            }
 
+        }
+
+        let controller = 0;
+        let start = new Point(2, 4);
+        let snake = new Snake(3, start, DIRECTIONS.RIGHT);
+        let fruit;
+
+        drawBackground(ctx);
+        
+        function stopGame(paused) {
+            start_button.innerHTML = "START";
+            clearInterval(controller);
+            controller = 0;
+            if (!paused) {
+                document.getElementById("game-over-overlay").style.display = 'flex';
+            }
+        }
+
+        let start_button = document.getElementById("start-button");
+        start_button.addEventListener("click", function () {
+            if (controller != 0) {
+                stopGame(true);
+            } else {
+                start_button.innerHTML = "STOP";
+                controller = setInterval(function () {
+                    drawBackground(ctx);
+                    if (!snake.move()) {
+                        stopGame(false);
+                    }
+                    snake.draw(ctx);
+                    if (!fruit) {
+                        fruit = new Fruit();
+                    }
+                    fruit.draw(ctx);
+                    if (snake.ate(fruit)) {
+                        snake.grow();
+                        snake.draw(ctx);
+                        fruit = null;
+                    }
+                }, 500);
+            }
+
+        });
 
 		function logKey(e) {
 			console.log(`${e.code} ${e.keyCode}`);
@@ -282,8 +377,12 @@
 					snake.changeDirection(DIRECTIONS.DOWN);
 					event.preventDefault();
 					break;
-				case "KeyG":
+                case "KeyG":
 					snake.grow();
+					event.preventDefault();
+					break;
+                case "KeyF":
+					fruit = new Fruit();
 					event.preventDefault();
 					break;
 				default:
@@ -293,8 +392,7 @@
 
 		document.addEventListener('keydown', reactToKeyEvent);
 
-	</script>
-
+    </script>
 </body>
 
 </html>
